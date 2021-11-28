@@ -155,7 +155,7 @@ logger "green" "checking k9s..."
 k9s version
 errorcheck k9s
 logger "green" "checking docker..."
-docker --version
+if [ "$AWS_EXECUTION_ENV" != "CloudShell" ]; then docker --version; else echo "skipping because it's not installed"
 errorcheck docker
 logger "green" "checking docker-compose..."
 docker-compose --version
