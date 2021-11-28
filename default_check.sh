@@ -89,9 +89,9 @@ errorcheck which
 # errorcheck figlet
 
 # add-ons tools (pre-requisites for the actual utilities) 
-logger "green" "checking pip..."
-pip --version
-errorcheck pip
+logger "green" "checking pip3..."
+pip3 --version
+errorcheck pip3
 logger "green" "checking node..."
 node --version
 errorcheck node
