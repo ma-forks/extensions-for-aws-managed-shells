@@ -1,6 +1,9 @@
 #!/bin/bash
 
-export NODE_VERSION=12.20.0
+export NODE_VERSION=16.13.0
+
+# Set to true if you want powershell
+export INSTALL_POWERSHELL=noplease
 
 ################## SETUP ENV ###############################
 #EKS-ANYWHERE EKSCTL EXTENSION
@@ -80,7 +83,7 @@ mkdir -p ${NVM_DIR} \
 npm install -g typescript
 
 # setup pip (latest at time of docker build)
-curl -s https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
+curl -s https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py \
    && python get-pip.py
  
 ########################################
@@ -99,6 +102,8 @@ fi
 
 
 # setup MS PowerShell
+if [ "$INSTALL_POWERSHELL" = "true" ]
+then \
 LATEST=$(curl -s https://api.github.com/repos/PowerShell/PowerShell/releases/latest) \
 && X86URL=$(echo $LATEST | jq -r '.assets[].browser_download_url' | grep linux-x64.tar.gz) \
 && X86ARTIFACT=$(echo $LATEST  | jq -r '.assets[].name' | grep linux-x64.tar.gz) \
@@ -107,15 +112,22 @@ LATEST=$(curl -s https://api.github.com/repos/PowerShell/PowerShell/releases/lat
 && sudo tar -zxvf $X86ARTIFACT -C /usr/local/bin/powershell/7 \
 && sudo chmod +x /usr/local/bin/powershell/7/pwsh \
 && sudo ln -s /usr/local/bin/powershell/7/pwsh /usr/local/bin/pwsh
+fi
 
 # setup the aws cli v2 (latest at time of docker build)
+if [ "$REINSTALL_AWS_CLI" = "true" ]
+then \
 curl -Ls "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
  && unzip awscliv2.zip \
  && sudo ./aws/install --update \
  && /usr/local/bin/aws --version
+fi
 
  # setup the eb cli (latest at time of docker build)
-python -m pip install awsebcli --upgrade 
+python3 -m pip install awsebcli --upgrade 
+
+# Upgrade NPM
+npm install -g npm
 
 # setup the aws cdk cli (latest at time of docker build)
 sudo npm i -g aws-cdk
@@ -124,6 +136,7 @@ sudo npm i -g aws-cdk
 sudo npm i -g cdk8s-cli
 
 # setup SAM CLI 
+# TODO: this generates error
 sudo pip3 install aws-sam-cli --upgrade
 
 # setup awsls 
@@ -140,7 +153,7 @@ curl -sLO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s h
     && sudo mv ./kubectl /usr/local/bin/kubectl
 
 # setup kubecolor 
-LATEST=$(curl -s https://api.github.com/repos/dty1er/kubecolor/releases/latest) \
+LATEST=$(curl -s https://api.github.com/repositories/302255735/releases/latest) \
 && X86URL=$(echo $LATEST | jq -r '.assets[].browser_download_url' | grep Linux_x86_64.tar.gz) \
 && X86ARTIFACT=$(echo $LATEST  | jq -r '.assets[].name' | grep Linux_x86_64.tar.gz) \
 && curl -L -O $X86URL \
@@ -171,7 +184,7 @@ curl "https://anywhere-assets.eks.amazonaws.com/releases/eks-a/1/artifacts/eks-a
 sudo mv ./eksctl-anywhere /usr/local/bin/
 
 # setup kubecfg 
-LATEST=$(curl -s https://api.github.com/repos/bitnami/kubecfg/releases/latest) \
+LATEST=$(curl -s https://api.github.com/repositories/91519321/releases/latest) \
 && X86URL=$(echo $LATEST | jq -r '.assets[].browser_download_url' | grep linux-amd64) \
 && curl -sLo kubecfg $X86URL \
 && chmod +x ./kubecfg \
@@ -199,8 +212,9 @@ LATEST=$(curl -s https://api.github.com/repos/derailed/k9s/releases/latest) \
 && sudo mv k9s /usr/local/bin/k9s 
 
 # setup docker
+if [ "$AWS_EXECUTION_ENV" != "CloudShell" ]
+    then
 sudo amazon-linux-extras install docker -y
-
 # setup docker-compose 
 LATEST=$(curl -s https://api.github.com/repos/docker/compose/releases/latest) \
 && X86URL=$(echo $LATEST | jq -r '.assets[].browser_download_url' | grep $(uname -s)-$(uname -m)) \
@@ -208,6 +222,11 @@ LATEST=$(curl -s https://api.github.com/repos/docker/compose/releases/latest) \
 && curl -Lo ./docker-compose $X86URL\
 && chmod +x ./docker-compose \
 && sudo mv ./docker-compose /usr/local/bin/docker-compose 
+else 
+        echo "skipping because Docker and docker-compose can't work in CloudShell"
+fi
+
+
 
 # setup bat
 LATEST=$(curl -s https://api.github.com/repos/sharkdp/bat/releases/latest) \
