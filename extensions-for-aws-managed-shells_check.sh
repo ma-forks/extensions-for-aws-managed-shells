@@ -1,6 +1,10 @@
 #!/bin/bash
 # this script checks the versions of the tools and utilities installed
 
+# Set to true if you want powershell
+export INSTALL_POWERSHELL=noplease
+
+
 errorcheck() {
    if [ $? != 0 ]; then
           logger "red" "Unrecoverable generic error found checking [$1]. Exiting."
@@ -100,9 +104,15 @@ errorcheck node
 logger "green" "checking zsh..."
 zsh --version
 errorcheck zsh
+if [ "$INSTALL_POWERSHELL" = "true" ]
+then 
 logger "green" "checking pwsh..."
 pwsh -v
 errorcheck pwsh
+else
+echo Skipping powershell check - installation disabled
+fi
+
 logger "green" "checking aws..."
 aws --version
 errorcheck aws
