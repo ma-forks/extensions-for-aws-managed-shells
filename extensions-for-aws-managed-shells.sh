@@ -27,6 +27,7 @@ export PATH=/usr/local/bin/code-server/bin:$PATH
 # setup various utils (latest at time of docker build)
 # docker is being installed to support DinD scenarios (e.g. for being able to build)
 # httpd-tools include the ab tool (for benchmarking http end points)
+yum install sudo -y 
 sudo yum update -y \
  && sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
  && sudo yum install -y \
@@ -118,8 +119,8 @@ curl -Ls "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
  && sudo ./aws/install --update \
  && /usr/local/bin/aws --version
 
- # setup the eb cli (latest at time of docker build)
-python -m pip install awsebcli --upgrade 
+# setup the eb cli (latest at time of docker build)
+pip3 install awsebcli --upgrade  
 
 # setup the aws cdk cli (latest at time of docker build)
 sudo npm i -g aws-cdk
@@ -144,7 +145,7 @@ curl -sLO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s h
     && sudo mv ./kubectl /usr/local/bin/kubectl
 
 # setup kubecolor 
-LATEST=$(curl -s curl -s https://api.github.com/repositories/302255735/releases/latest) \
+LATEST=$(curl -s https://api.github.com/repositories/302255735/releases/latest) \
 && X86URL=$(echo $LATEST | jq -r '.assets[].browser_download_url' | grep Linux_x86_64.tar.gz) \
 && X86ARTIFACT=$(echo $LATEST  | jq -r '.assets[].name' | grep Linux_x86_64.tar.gz) \
 && curl -L -O $X86URL \
@@ -251,7 +252,7 @@ fi
 if [ "$AWS_EXECUTION_ENV" != "CloudShell" ]
     then
         if [ -d "/usr/local/bin/code-server-dir" ]; then sudo rm -Rf /usr/local/bin/code-server-dir; sudo rm /usr/local/bin/code-server; fi
-        LATEST=$(curl -s https://api.github.com/repos/cdr/code-server/releases/latest) \
+        LATEST=$(curl -sL https://api.github.com/repos/cdr/code-server/releases/latest) \
         && X86URL=$(echo $LATEST | jq -r '.assets[].browser_download_url' | grep linux-amd64) \
         && X86ARTIFACT=$(echo $LATEST  | jq -r '.assets[].name' | grep linux-amd64) \
         && curl -L -O $X86URL \
